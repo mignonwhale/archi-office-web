@@ -110,7 +110,7 @@ src/
 - **Ignore Patterns**: node_modules, .next, out, build, next-env.d.ts
 
 ### 파일 구조 컨벤션
-- **컴포넌트**: TSX 확장자 사용
+- **컴포넌트**: TSX 확장자 사용, 파일명은 PascalCase (예: `HeroSection.tsx`, `FeaturedProjects.tsx`)
 - **스타일**: Tailwind CSS 클래스 기반
 - **타입 정의**: TypeScript 내장 타입 + Next.js 타입
 - **Import 경로**: `@/*` 별칭 사용 권장
