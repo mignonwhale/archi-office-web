@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
@@ -19,7 +20,6 @@ export default function ContactPage() {
     timeline: '',
     message: ''
   });
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const contactInfo = [
     {
@@ -76,15 +76,26 @@ export default function ContactPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 실제 구현에서는 여기서 API 호출
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
 
-    // 3초 후 폼 리셋
-    setTimeout(() => {
-      setIsSubmitted(false);
+    // 로딩 토스트 표시
+    const loadingToast = toast.loading('문의를 전송하고 있습니다...');
+
+    try {
+      // 실제 구현에서는 여기서 API 호출
+      console.log('Form submitted:', formData);
+
+      // 시뮬레이션을 위한 지연
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // 성공 토스트
+      toast.success('문의가 성공적으로 전송되었습니다! 24시간 이내에 연락드리겠습니다.', {
+        id: loadingToast,
+        duration: 5000,
+      });
+
+      // 폼 리셋
       setFormData({
         name: '',
         company: '',
@@ -95,31 +106,28 @@ export default function ContactPage() {
         timeline: '',
         message: ''
       });
-    }, 3000);
-  };
 
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen pt-16 flex items-center justify-center">
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-        >
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl mb-4">문의가 성공적으로 접수되었습니다!</h2>
-          <p className="text-muted-foreground mb-8">
-            영업일 기준 24시간 이내에 담당자가 연락드리겠습니다.
-          </p>
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-        </motion.div>
-      </div>
-    );
-  }
+    } catch (error) {
+      // 에러 토스트
+      toast.error('문의 전송 중 오류가 발생했습니다. 다시 시도해주세요.', {
+        id: loadingToast,
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen pt-16">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'hsl(var(--background))',
+            color: 'hsl(var(--foreground))',
+            border: '1px solid hsl(var(--border))',
+          },
+        }}
+      />
       {/* 헤더 */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4 lg:px-8">
