@@ -13,6 +13,7 @@ export interface Project {
   created_at: string
   updated_at: string
   images?: ProjectImage[]
+  status: '진행중' | '완료'
 }
 
 export interface ProjectImage {
@@ -33,6 +34,7 @@ export interface CreateProjectData {
   client?: string
   area?: string
   is_featured?: boolean
+  status: string
 }
 
 export interface UpdateProjectData extends Partial<CreateProjectData> {

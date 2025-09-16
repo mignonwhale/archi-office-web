@@ -118,13 +118,14 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen pt-16">
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 4000,
           style: {
-            background: 'hsl(var(--background))',
+            background: '#fff',
             color: 'hsl(var(--foreground))',
             border: '1px solid hsl(var(--border))',
+            padding: '20px',
           },
         }}
       />

@@ -155,7 +155,10 @@ CREATE TRIGGER update_instagram_posts_updated_at BEFORE UPDATE ON instagram_post
 CREATE TRIGGER update_timeline_items_updated_at BEFORE UPDATE ON timeline_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Row Level Security (RLS) 설정 (선택사항)
+-- Row Level Security (RLS) 설정
+-- 테스트 단계에서는 RLS를 비활성화합니다.
+-- 프로덕션 배포 시 아래 주석을 해제하여 RLS를 활성화하세요.
+
 -- ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE project_images ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE news_items ENABLE ROW LEVEL SECURITY;
@@ -166,5 +169,192 @@ CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services FOR EACH ROW
 -- ALTER TABLE timeline_items ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 
+-- 테스트용: 모든 RLS 비활성화
+ALTER TABLE projects DISABLE ROW LEVEL SECURITY;
+ALTER TABLE project_images DISABLE ROW LEVEL SECURITY;
+ALTER TABLE news_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE team_members DISABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_inquiries DISABLE ROW LEVEL SECURITY;
+ALTER TABLE social_links DISABLE ROW LEVEL SECURITY;
+ALTER TABLE instagram_posts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE timeline_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE services DISABLE ROW LEVEL SECURITY;
+
+-- RLS 정책 설정 (테스트 단계에서는 주석 처리)
+-- 프로덕션 배포 시 아래 정책들의 주석을 해제하고 RLS를 활성화하세요.
+
+
+-- 1. Projects 테이블 정책
+CREATE POLICY "Enable read access for all users" ON projects
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON projects
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON projects
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON projects
+    FOR DELETE TO authenticated USING (true);
+
+-- 2. Project Images 테이블 정책
+CREATE POLICY "Enable read access for all users" ON project_images
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON project_images
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON project_images
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON project_images
+    FOR DELETE TO authenticated USING (true);
+
+-- 3. News Items 테이블 정책
+CREATE POLICY "Enable read access for all users" ON news_items
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON news_items
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON news_items
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON news_items
+    FOR DELETE TO authenticated USING (true);
+
+-- 4. Team Members 테이블 정책
+CREATE POLICY "Enable read access for all users" ON team_members
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON team_members
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON team_members
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON team_members
+    FOR DELETE TO authenticated USING (true);
+
+-- 5. Contact Inquiries 테이블 정책 (관리자만 접근)
+CREATE POLICY "Enable read for authenticated users" ON contact_inquiries
+    FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Enable insert for all users" ON contact_inquiries
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON contact_inquiries
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON contact_inquiries
+    FOR DELETE TO authenticated USING (true);
+
+-- 6. Social Links 테이블 정책
+CREATE POLICY "Enable read access for all users" ON social_links
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON social_links
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON social_links
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON social_links
+    FOR DELETE TO authenticated USING (true);
+
+-- 7. Instagram Posts 테이블 정책
+CREATE POLICY "Enable read access for all users" ON instagram_posts
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON instagram_posts
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON instagram_posts
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON instagram_posts
+    FOR DELETE TO authenticated USING (true);
+
+-- 8. Timeline Items 테이블 정책
+CREATE POLICY "Enable read access for all users" ON timeline_items
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON timeline_items
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON timeline_items
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON timeline_items
+    FOR DELETE TO authenticated USING (true);
+
+-- 9. Services 테이블 정책
+CREATE POLICY "Enable read access for all users" ON services
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users" ON services
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Enable update for authenticated users" ON services
+    FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Enable delete for authenticated users" ON services
+    FOR DELETE TO authenticated USING (true);
+
+-- Storage 정책 설정 (project-images 버킷용)
+-- 주의: 이 정책들은 Supabase Dashboard > Storage > Policies에서 설정하거나
+-- 아래 SQL을 별도로 실행해야 합니다.
+
+-- Storage 버킷 생성 (Dashboard에서 수동 생성 권장)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('project-images', 'project-images', true);
+
+-- Storage 정책 (별도 실행 필요)
+-- CREATE POLICY "Allow authenticated uploads" ON storage.objects
+--     FOR INSERT TO authenticated WITH CHECK (bucket_id = 'project-images');
+
+-- CREATE POLICY "Allow public reads" ON storage.objects
+--     FOR SELECT TO public USING (bucket_id = 'project-images');
+
+-- CREATE POLICY "Allow authenticated updates" ON storage.objects
+--     FOR UPDATE TO authenticated USING (bucket_id = 'project-images');
+
+-- CREATE POLICY "Allow authenticated deletes" ON storage.objects
+--     FOR DELETE TO authenticated USING (bucket_id = 'project-images');
+
 -- 샘플 데이터 삽입은 별도의 파일에서 수행
 -- INSERT INTO 문들은 insert_sample_data.sql 파일 참조
+
+
+
+  -- 방법 1: Storage RLS 완전 비활성화 (권장)
+
+  -- Supabase Dashboard > SQL Editor에서 실행
+  ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
+
+  -- 방법 2: 임시 Storage 정책 생성
+
+  -- 모든 사용자에게 업로드 허용 (테스트용)
+  CREATE POLICY "Allow all uploads for testing" ON storage.objects
+      FOR INSERT WITH CHECK (bucket_id = 'project-images');
+
+  -- 모든 사용자에게 읽기 허용
+  CREATE POLICY "Allow all reads for testing" ON storage.objects
+      FOR SELECT USING (bucket_id = 'project-images');
+
+  -- 방법 3: 버킷을 Public으로 설정
+
+  -- 버킷을 완전히 공개로 설정
+  UPDATE storage.buckets
+  SET public = true
+  WHERE id = 'project-images';
+
+
+  -- Storage RLS 상태 확인
+  SELECT schemaname, tablename, rowsecurity
+  FROM pg_tables
+  WHERE tablename = 'objects' AND schemaname = 'storage';
+
+  -- 버킷 상태 확인
+  SELECT id, name, public
+  FROM storage.buckets
+  WHERE id = 'project-images';

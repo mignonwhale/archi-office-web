@@ -1,6 +1,6 @@
 'use client'
 
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {motion} from 'motion/react';
 import {BarChart3, Building, Edit, Eye, FileText, MessageSquare, Plus, Trash2, Users} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from "../ui/card";
@@ -8,13 +8,16 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Badge} from "@/components/ui/badge";
+import NewProjectModal from "@/components/admin/NewProjectModal";
+import {supabase} from "@/lib/supabase";
+import {Project} from "@/types";
 
 // Mock data for demonstration
-const mockProjects = [
-  { id: 1, title: "모던 레지던스", category: "주거", status: "완료", date: "2024.12.15" },
-  { id: 2, title: "미니멀 오피스", category: "상업", status: "진행중", date: "2024.11.28" },
-  { id: 3, title: "어반 컴플렉스", category: "복합", status: "완료", date: "2024.10.20" }
-];
+// const mockProjects = [
+  //   { id: 1, title: "모던 레지던스", category: "주거", status: "완료", date: "2024.12.15" },
+//   { id: 2, title: "미니멀 오피스", category: "상업", status: "진행중", date: "2024.11.28" },
+//   { id: 3, title: "어반 컴플렉스", category: "복합", status: "완료", date: "2024.10.20" }
+// ];
 
 const mockNews = [
   { id: 1, title: "2024 한국건축문화대상 우수상 수상", category: "수상", views: 1250, date: "2024.12.15" },
@@ -38,6 +41,119 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  const fetchProjects = async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+
+    if (error) {
+      console.error("프로젝트 조회 오류:", error);
+      return;
+    }
+
+    if (data) {
+      setProjects(data as Project[]);
+    }
+  }
+
+  const deleteProject = async (projectId: string) => {
+    if (!confirm("정말로 이 프로젝트를 삭제하시겠습니까? 관련된 모든 이미지도 함께 삭제됩니다.")) {
+      return;
+    }
+
+    try {
+      // 1. 프로젝트 이미지 목록 조회
+      const { data: images, error: imagesError } = await supabase
+        .from('project_images')
+        .select('image_url')
+        .eq('project_id', projectId);
+
+      if (imagesError) {
+        console.error("프로젝트 이미지 조회 오류:", imagesError);
+      }
+
+      // 2. Storage에서 이미지 파일들 삭제
+      if (images && images.length > 0) {
+        // URL에서 파일 경로 추출 개선
+        const imagePaths = images.map(img => {
+          const url = img.image_url;
+          console.log("### 원본 URL:", url); // XXX test code
+
+          // Supabase Storage URL 형식: https://[project-id].supabase.co/storage/v1/object/public/[bucket]/[path]
+          // https://nfzfzzswdiprfvkhfcxc.supabase.co/storage/v1/object/public/project-images/1758016108596_0_photo_1572197491557_5b1a2c767c7b.jpg
+          const pathMatch = url.match(/\/storage\/v1\/object\/public\/[^\/]+\/(.+)$/);
+          const extractedPath = pathMatch ? pathMatch[1] : null;
+
+          console.log("### 추출된 경로:", extractedPath); // XXX test code
+          return extractedPath;
+        }).filter(Boolean);
+
+        console.log("### 최종 imagePaths:", imagePaths); // XXX test code
+
+        if (imagePaths.length > 0) {
+          try {
+            // 파일 존재 확인을 위한 개별 파일 체크
+            for (const path of imagePaths) {
+              const { data: fileData, error: fileError } = await supabase.storage
+                .from('project_images')
+                .list(path.split('/').slice(0, -1).join('/') || '', {
+                  limit: 100,
+                  search: path.split('/').pop()
+                });
+
+              console.log(`### 파일 ${path} 존재 확인:`, fileData, fileError); // XXX test code
+            }
+
+            // 파일 삭제 실행
+            const { data: deleteResult, error: storageError } = await supabase.storage
+              .from('project_images')
+              .remove(imagePaths);
+
+            console.log("### Storage 삭제 결과:", deleteResult); // XXX test code
+            console.log("### Storage 삭제 에러:", storageError); // XXX test code
+
+            if (storageError) {
+              console.error("Storage 이미지 삭제 오류:", storageError);
+              // 에러가 있어도 프로젝트 삭제는 계속 진행
+            } else {
+              console.log("Storage 파일 삭제 성공:", deleteResult);
+            }
+          } catch (error) {
+            console.error("Storage 처리 중 예외:", error);
+          }
+        }
+      }
+
+
+      // 3. 프로젝트 삭제 (CASCADE로 project_images도 자동 삭제됨)
+      const { error: projectError } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (projectError) {
+        console.error("프로젝트 삭제 오류:", projectError);
+        alert("프로젝트 삭제 중 오류가 발생했습니다.");
+        return;
+      }
+
+      // 프로젝트 목록 새로고침
+      fetchProjects();
+      alert("프로젝트와 관련 이미지가 성공적으로 삭제되었습니다.");
+
+    } catch (error) {
+      console.error("삭제 처리 중 오류:", error);
+      alert("삭제 처리 중 오류가 발생했습니다.");
+    }
+  }
+
+  useEffect(() => {
+    // 프로젝트 목록 조회
+    fetchProjects();
+  }, [])
 
   // 로그인 처리 (데모용)
   const handleLogin = (e: React.FormEvent) => {
@@ -157,7 +273,7 @@ export default function AdminPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-muted-foreground text-sm">총 프로젝트</p>
-                      <p className="text-2xl">{mockProjects.length}</p>
+                      <p className="text-2xl">{projects.length}</p>
                     </div>
                     <Building className="w-8 h-8 text-primary" />
                   </div>
@@ -261,7 +377,10 @@ export default function AdminPage() {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>프로젝트 관리</CardTitle>
-                    <Button className="flex items-center gap-2">
+                    <Button
+                      className="flex items-center gap-2"
+                      onClick={() => setIsNewProjectModalOpen(true)}
+                    >
                       <Plus className="w-4 h-4" />
                       새 프로젝트
                     </Button>
@@ -269,13 +388,13 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockProjects.map((project) => (
+                    {projects.map((project) => (
                       <div key={project.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h3 className="font-medium">{project.title}</h3>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span>{project.category}</span>
-                            <span>{project.date}</span>
+                            <span>{project.year}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -285,7 +404,11 @@ export default function AdminPage() {
                           <Button size="sm" variant="outline">
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deleteProject(project.id)}
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -423,6 +546,16 @@ export default function AdminPage() {
             </motion.div>
           </TabsContent>
         </Tabs>
+
+        {/* 새 프로젝트 모달 */}
+        <NewProjectModal
+          isOpen={isNewProjectModalOpen}
+          onClose={() => setIsNewProjectModalOpen(false)}
+          onSuccess={() => {
+            fetchProjects();
+            console.log('프로젝트 등록 성공!')
+          }}
+        />
       </div>
     </div>
   );
