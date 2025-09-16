@@ -1,5 +1,4 @@
 import {InstagramPost, NewsItem, Project, Service, SocialLink, TeamMember, TimeLineItem} from '@/types';
-import {Facebook, Instagram, Linkedin, Youtube} from 'lucide-react';
 
 export const projects: Project[] = [
   {
@@ -11,6 +10,7 @@ export const projects: Project[] = [
     client: "개인 주택",
     area: "240㎡",
     is_featured: true,
+    status: "완료",
     created_at: "2024-09-15T00:00:00Z",
     updated_at: "2024-09-15T00:00:00Z",
     images: [
@@ -44,6 +44,7 @@ export const projects: Project[] = [
     client: "IT 스타트업",
     area: "180㎡",
     is_featured: true,
+    status: "완료",
     created_at: "2024-09-15T00:00:00Z",
     updated_at: "2024-09-15T00:00:00Z",
     images: [
@@ -77,6 +78,7 @@ export const projects: Project[] = [
     client: "부동산 개발업체",
     area: "1,200㎡",
     is_featured: false,
+    status: "완료",
     created_at: "2024-09-15T00:00:00Z",
     updated_at: "2024-09-15T00:00:00Z",
     images: [
@@ -110,6 +112,7 @@ export const projects: Project[] = [
     client: "상업 건물주",
     area: "800㎡",
     is_featured: false,
+    status: "완료",
     created_at: "2024-09-15T00:00:00Z",
     updated_at: "2024-09-15T00:00:00Z",
     images: [

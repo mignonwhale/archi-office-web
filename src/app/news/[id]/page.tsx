@@ -3,9 +3,9 @@ import {notFound} from 'next/navigation';
 import {NewsDetailPage} from "@/components/pages/NewsDetailPage";
 
 interface NewsPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -15,7 +15,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({params}: NewsPageProps) {
-  const news = newsData.find(n => n.id === params.id);
+  const { id } = await params;
+  const news = newsData.find(n => n.id === id);
 
   if (!news) {
     return {
@@ -29,8 +30,9 @@ export async function generateMetadata({params}: NewsPageProps) {
   };
 }
 
-export default function NewsDetail({params}: NewsPageProps) {
-  const news = newsData.find(n => n.id === params.id);
+export default async function NewsDetail({params}: NewsPageProps) {
+  const { id } = await params;
+  const news = newsData.find(n => n.id === id);
 
   if (!news) {
     notFound();

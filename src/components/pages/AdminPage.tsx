@@ -95,13 +95,20 @@ export default function AdminPage() {
 
         if (imagePaths.length > 0) {
           try {
+            // 먼저 버킷 전체 파일 목록 확인
+            const { data: allFiles, error: listAllError } = await supabase.storage
+              .from('project_images')
+              .list('', { limit: 100 });
+
+            console.log("### 버킷 전체 파일 목록:", allFiles, listAllError); // XXX test code
+
             // 파일 존재 확인을 위한 개별 파일 체크
             for (const path of imagePaths) {
               const { data: fileData, error: fileError } = await supabase.storage
                 .from('project_images')
-                .list(path.split('/').slice(0, -1).join('/') || '', {
+                .list('', {
                   limit: 100,
-                  search: path.split('/').pop()
+                  search: path
                 });
 
               console.log(`### 파일 ${path} 존재 확인:`, fileData, fileError); // XXX test code

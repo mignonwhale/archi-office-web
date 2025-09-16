@@ -3,9 +3,9 @@ import {notFound} from 'next/navigation';
 import ProjectDetailPage from "@/components/pages/ProjectDetailPage";
 
 interface ProjectPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -15,7 +15,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: ProjectPageProps) {
-  const project = projects.find(p => p.id === params.id);
+  const { id } = await params;
+  const project = projects.find(p => p.id === id);
 
   if (!project) {
     return {
@@ -29,8 +30,9 @@ export async function generateMetadata({ params }: ProjectPageProps) {
   };
 }
 
-export default function ProjectDetail({ params }: ProjectPageProps) {
-  const project = projects.find(p => p.id === params.id);
+export default async function ProjectDetail({ params }: ProjectPageProps) {
+  const { id } = await params;
+  const project = projects.find(p => p.id === id);
 
   if (!project) {
     notFound();

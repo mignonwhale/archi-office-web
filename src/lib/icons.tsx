@@ -9,7 +9,8 @@ import {
 import {
   siInstagram,
   siYoutube,
-  siFacebook
+  siFacebook,
+  type SimpleIcon
 } from 'simple-icons';
 
 // Lucide 아이콘 매핑 (서비스 아이콘)
@@ -21,7 +22,7 @@ const lucideIconMap: Record<string, LucideIcon> = {
 };
 
 // Simple Icons 매핑 (소셜 아이콘)
-const simpleIconMap: Record<string, any> = {
+const simpleIconMap: Record<string, SimpleIcon> = {
   Instagram: siInstagram,
   Youtube: siYoutube,
   Facebook: siFacebook
@@ -53,11 +54,12 @@ export function getSocialIcon(iconName: string) {
 }
 
 // 소셜 아이콘을 React 컴포넌트로 변환하는 헬퍼
-export function createSocialIconComponent(iconInfo: any, className?: string) {
+export function createSocialIconComponent(iconInfo: { type: string; data: SimpleIcon | LucideIcon }, className?: string) {
   if (!iconInfo) return null;
 
   if (iconInfo.type === 'simple') {
     // Simple Icons
+    const simpleIcon = iconInfo.data as SimpleIcon;
     return (
       <svg
         role="img"
@@ -65,12 +67,12 @@ export function createSocialIconComponent(iconInfo: any, className?: string) {
         className={className}
         fill="currentColor"
       >
-        <path d={iconInfo.data.path} />
+        <path d={simpleIcon.path} />
       </svg>
     );
   } else if (iconInfo.type === 'lucide') {
     // Lucide Icons
-    const LucideComponent = iconInfo.data;
+    const LucideComponent = iconInfo.data as LucideIcon;
     return <LucideComponent className={className} />;
   }
 

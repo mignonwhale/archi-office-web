@@ -102,7 +102,7 @@ export default function NewProjectModal({ isOpen, onClose, onSuccess }: NewProje
    * @param {keyof ProjectFormData} field - 업데이트할 필드명
    * @param {any} value - 새로운 값
    */
-  const handleInputChange = (field: keyof ProjectFormData, value: any) => {
+  const handleInputChange = (field: keyof ProjectFormData, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -231,7 +231,7 @@ export default function NewProjectModal({ isOpen, onClose, onSuccess }: NewProje
 
           console.log(`이미지 업로드 중 (${i + 1}/${formData.images.length}):`, fileName)
 
-          const { data: uploadData, error: uploadError } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('project-images')
             .upload(fileName, file)
 

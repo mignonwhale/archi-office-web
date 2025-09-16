@@ -44,7 +44,7 @@ export default function SocialMedia() {
                 transition={{ duration: 0.6, delay: 0.1 * index }}
               >
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  {createSocialIconComponent(socialIconData, "w-6 h-6 text-primary")}
+                  {socialIconData && createSocialIconComponent(socialIconData, "w-6 h-6 text-primary")}
                 </div>
                 <h3 className="mb-2 group-hover:text-primary transition-colors">
                   {social.name}
@@ -69,7 +69,7 @@ export default function SocialMedia() {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                {createSocialIconComponent(getSocialIcon("Instagram"), "w-4 h-4 text-white")}
+                {getSocialIcon("Instagram") && createSocialIconComponent(getSocialIcon("Instagram")!, "w-4 h-4 text-white")}
               </div>
               <h3 className="text-2xl">Instagram 피드</h3>
             </div>
